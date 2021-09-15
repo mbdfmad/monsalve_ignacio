@@ -1,16 +1,19 @@
 ---
 title: "Práctica 0. FMAD 2021-2022"
-subtitle: "ICAI. Master en Big Data. Fundamentos Matemáticos del Análisis de Datos (FMAD)."
-author: "Apellido, Nombre"
+author: "Monsalve Rodilla, Ignacio"
 date: 'Curso 2021-22. Última actualización: `r format(Sys.time(), "%Y-%m-%d")`'
-output: html_document
+output:
+  html_document: default
+  word_document: default
+subtitle: ICAI. Master en Big Data. Fundamentos Matemáticos del Análisis de Datos
+  (FMAD).
 ---
-No funciona
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Ejercicio 0 (ejemplo).
+# Ejercicio 0 
 
 **Enunciado:** Usa la función `seq` de R para fabricar un vector `v` con los múltiplos de 3 del 0 al 300. Muestra los primeros 20 elementos de `v` usando `head` y calcula:
 
@@ -39,3 +42,244 @@ Longitud:
 ```{r}
 length(v)
 ```
+
+
+# Ejercicio 1 
+
+**Enunciado:** Usa la función sample para crear 100 números del 1 al 6. 
+Haz la tabla de frecuencias absolutas y relativas 
+
+**Respuesta:**
+
+En primer lugar, definimos el vector dado_honesto
+
+```{r}
+set.seed(111)
+dado_honesto <-  sample(1:6, 100, replace=TRUE)
+dado_honesto
+```
+
+A continuación, se realiza la tabla de frecuencias absolutas y relativas. 
+En primer lugar se utilizará R normal:
+
+```{r}
+table(dado_honesto)
+```
+Tabla de frecuencias relativas 
+
+```{r}
+prop.table(table(dado_honesto))
+```
+
+Utilizando dplyr: 
+
+```{r}
+library(tidyverse)
+dat = data.frame(dado_honesto)
+```
+
+```{r}
+dat_ej_1 = data.frame(dado_honesto)
+dat_ej_1
+```
+
+
+Se utiliza 'count' 
+
+Frecuencia absoluta 
+
+```{r}
+dat_ej_1 %>% 
+  count(dado_honesto)
+```
+
+Frecuencia relativa 
+
+
+
+```{r}
+dat_ej_1 %>% 
+  count(dado_honesto)
+```
+```{r}
+dat_ej_1 %>% 
+  count(dado_honesto) %>% 
+  mutate(dado_honesto, relFreq = prop.table(n))
+```
+
+
+
+# Ejercicio 2
+
+**Enunciado:** Crear un vector 'dado_cargado' siendo la probabilidad de 6 doble que la de cualquier otro 
+Realizar tablas de frecuencias absolutas y relativas
+
+
+**Respuesta:** 
+
+```{r}
+set.seed(111)
+dado_cargado <-  sample(1:6, 100, replace = TRUE, prob = rep(c(6/7, 12/7), times = c(5,1)))
+dado_cargado
+```
+
+A continuación, se muestran las tablas como en el Ejercicio I: 
+
+```{r}
+table(dado_cargado)
+```
+
+```{r}
+prop.table(table(dado_cargado))
+```
+
+Se repite el proceso con dplyr
+
+```{r}
+dat_ej_2 = data.frame(dado_cargado)
+dat_ej_2
+```
+
+```{r}
+dat_ej_2 %>% 
+  count(dado_cargado)
+```
+
+La tabla de frecuencias relativas es: 
+
+```{r}
+
+dat_ej_2 %>% 
+  count(dado_cargado) %>% 
+  mutate(dado_cargado, relFreq = prop.table(n))
+```
+
+
+
+# Ejercicio 3 
+
+**Enunciado:** Utilizar rep y sep para crear tres vectores con una distribución concreta 
+
+**Respuesta:**
+
+```{r}
+v1 <- rep(seq(4,1), each = 4)
+v2 <- rep(seq(1,5), times = 1:5)
+v3 <- rep(seq(4,1), times = 4)
+```
+
+```{r}
+v1
+v2
+v3
+```
+
+
+
+# Ejercicio IV
+
+**Enunciado:** Debe utilizarse la tabla mpg y crear una tabla alternativa 
+
+En ella todas las filas deben contener 'pickup' y las columnas comenzar por 'c'
+
+
+
+```{r}
+mpg %>% 
+  filter(class == 'pickup') %>% 
+    select(starts_with('c'))
+```
+
+
+
+
+# Ejercicio V
+
+**Enunciado:** En primer lugar se pide descargar el finchero de census. 
+Desde la ventana de Environment se realiza un 'Import Dataset' y se guarda en la variable census
+Realmente, se quiere trabajar con dplyr por lo que debe realizarse una conversión
+
+
+```{r}
+library(haven)
+census2 = read_dta('./census.dta')
+```
+
+```{r}
+View(census2)
+```
+
+
+¿Cuáles son las poblaciones totales de las regiones?
+```{r}
+Conteo <- sum(census2$pop)
+```
+
+
+```{r}
+ census2  %>% 
+  group_by(region) %>% 
+  
+  summarise(Conteo =  sum(pop))-> poblacion
+poblacion
+```
+
+Representa las poblaciones en un diagrama de barras
+
+```{r}
+library(viridisLite)
+```
+
+
+```{r}
+ggplot(poblacion, aes(region, Conteo))+ geom_col(fill=c('lightgoldenrod1','coral3', 'orchid1','lightpink'))
+```
+
+
+
+
+Representa las poblaciones de mayor a menor 
+
+
+
+```{r}
+census2 %>% 
+  arrange(desc(pop))
+```
+
+
+Crea una nueva variable que contenga la tasa de divorcios / matrimonios para cada estado 
+
+```{r}
+variable_tasa <- census2 %>% 
+  mutate(state, ratio = divorce/marriage) %>% 
+  select(state, ratio)
+variable_tasa
+```
+
+
+Si nos preguntamos cuáles son los estados más envejecidos podemos responder de dos maneras. 
+Mirando la edad mediana o mirando la franja de mayor edad. 
+Haz una tabla en la que aparezcan los valores de estos criterios 
+
+
+
+
+```{r}
+census2 %>% 
+  mutate(state,variable_65 = pop65p/pop) %>% 
+  select(state, medage, variable_65) %>% 
+  arrange(desc(medage))
+```
+
+Haz un histograma de los valores de las variables medage y con la curva de densidad 
+
+```{r}
+ggplot(census2, aes(x = medage)) + geom_histogram(aes(y=stat(density)), bins = 10, fill = 'darkolivegreen1') + geom_density(color='darkolivegreen3', size=2)
+```
+
+
+
+
+
+
