@@ -1,0 +1,512 @@
+---
+title: "Práctica 0. FMAD 2021-2022"
+author: "Monsalve Rodilla, Ignacio"
+date: 'Curso 2021-22. Última actualización: `r format(Sys.time(), "%Y-%m-%d")`'
+output:
+  word_document: default
+  html_document: default
+subtitle: ICAI. Master en Big Data. Fundamentos Matemáticos del Análisis de Datos
+  (FMAD).
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(tidyverse)
+```
+
+
+
+# EJERCICIO I 
+
+
+## APARTADO I 
+
+Se ofrece una tabla de densidad de probabilidad de la variable aleatoria X1. 
+
+
+Creamos un vector llamado valor y otro llamado probabilidad 
+
+```{r}
+
+valor = c(0,1,2,3)
+
+prob = c(64/125, 48/125, 12/125, 1/125)
+
+
+```
+
+La media se calcula simplemente multiplicando los valores por sus respectivas probabilidades: 
+
+```{r}
+
+media = valor %*% prob
+(media = media[1,1])
+
+```
+
+
+
+La varianza teórica se puede calcular de la siguiente forma: 
+
+
+```{r}
+
+sum((valor-media)^2*prob)
+
+```
+
+
+
+## APARTADO 2 
+
+
+```{r}
+valor = c(0,1,2,3)
+
+prob = c(64/125, 48/125, 12/125, 1/125)
+
+```
+
+
+Se combinan 'sample' y 'replicate' para simular 100.000 muestras de tamaño 10 y estudiar la distribución de las medias muestrales.
+
+```{r}
+
+
+k = 100000
+n1 = 10 
+mediasMuestrales1 = replicate (k, {
+  muestra = sample(valor, n1, replace = TRUE, prob = prob)
+  mean(muestra)
+})
+
+```
+
+
+
+
+```{r}
+ggplot() + 
+  geom_histogram(aes(x = mediasMuestrales1, y=..density..), bins = 15, fill="skyblue", color="black") + 
+  geom_vline(xintercept = mean(mediasMuestrales1), 
+             col="blue", linetype="dashed", size=2)+
+  geom_density(mapping = aes(mediasMuestrales1), adjust=6,color="blue",size=1, adjust=1.5)
+```
+
+
+Se repite con tamaño 30 en vez de 10, por lo que es de esperar que la acentuación del histograma hacia la normal sea mayor que antes. 
+
+```{r}
+
+
+k = 100000
+n1 = 30
+mediasMuestrales2 = replicate (k, {
+  muestra = sample(valor, n1, replace = TRUE, prob = prob)
+  mean(muestra)
+})
+
+
+```
+
+
+De nuevo, se puede representar con ggplot: 
+
+
+```{r}
+ggplot() + 
+  geom_histogram(aes(x = mediasMuestrales2, y=..density..), bins = 15, fill="skyblue", color="black") + 
+  geom_vline(xintercept = mean(mediasMuestrales1), 
+             col="blue", linetype="dashed", size=2)+
+  geom_density(mapping = aes(mediasMuestrales1), adjust=3,color="blue",size=1, adjust=1.5)
+```
+
+No se pide, pero por reforzar la idea, se incluye también un tamaño de muestra igual a 1000, y se puede observar como se ve claramente la normal 
+
+```{r}
+k = 10000
+n1 = 1000
+mediasMuestrales3 = replicate (k, {
+  muestra = sample(valor, n1, replace = TRUE, prob = prob)
+  mean(muestra)
+})
+```
+
+```{r}
+
+ggplot() + 
+  geom_histogram(aes(x = mediasMuestrales3, y=..density..), bins = 15, fill="skyblue", color="black") + 
+  geom_vline(xintercept = mean(mediasMuestrales1), 
+             col="blue", linetype="dashed", size=2)+
+  geom_density(mapping = aes(mediasMuestrales1), adjust=6,color="blue",size=1, adjust=1.5)
+```
+
+
+
+
+## APARTADO III 
+
+La variable aleatoria discreta X2 tiene otra tabla de probabilidad, por lo que se guardan dos nuevos vectores, nombrados como valor2 y prob2, y también se vuelven a incluir los del apartado I ya que se necesitarán y está bien recordarlos. 
+
+
+```{r}
+
+valor = c(0,1,2,3)
+
+prob = c(64/125, 48/125, 12/125, 1/125)
+
+
+
+
+valor2 = c(0,1,2)
+
+prob2 = c(1/2, 1/4, 1/4)
+
+```
+
+
+
+Suponiendo que X1 y X2 son independientes:
+
+**¿Qué valores puede tomar la suma X1+X2?**
+
+Los valores que puede tomar son los comprendidos entre 0 y 5
+
+
+
+**¿Cual es tu tabla de probabilidad?**
+
+Para la tabla de probabilidad se utilizan bucles for y se multiplican las distintas probabilidades de X1 y X2 para cada valor que pueden tomar. 
+
+```{r}
+probf <- vector(length=6)
+for(i in seq(0,5,1)){
+  for(j in seq(0,3,1)){
+    for(k in seq(0,2,1)){
+      if((j+k)==i){
+        probf[i+1] <- probf[i+1] + (prob[j+1]*prob2[k+1])
+      }
+    }
+  }
+}
+probf
+sum(probf)
+
+```
+
+
+## APARTADO IV
+
+La media teórica de la suma se calcula : 
+
+
+
+
+```{r}
+
+media_ej_tot = valor%*%prob + valor2%*%prob2
+media_ej_tot[1,1]
+```
+
+También podría hacerse de esta otra forma, es lo mismo.
+
+
+```{r}
+a = seq(0,5,1)
+a
+probf
+
+media_ej = a%*%probf
+media_ej[1,1]
+```
+
+A continuación, se simulan cien mil valores: 
+
+
+```{r}
+k = 100000 
+mediasMuestrales4 = replicate(k, {
+X1 = sample(0:3, size = 1, replace = TRUE, prob = c(64, 48, 12, 1))
+X2 = sample(0:2, size = 1, replace = TRUE, prob = c(1/2, 1/4, 1/4))
+mean(X1)+mean(X2)
+})
+```
+
+```{r}
+(medias_ambas_variables = mean(mediasMuestrales4))
+```
+
+
+
+
+## ENUNCIADO II 
+
+
+En primer lugar, se descarga el fichero del enlace y se guarda en una variable llamada 'datos2'
+
+
+```{r}
+library(tidyverse)
+```
+
+
+```{r}
+datos2 = read_csv('testResults.csv')
+View(datos2)
+```
+
+
+Se puede ver como la información de gender y age se encuentra en la misma tabla, separada por un _, por lo que no se cumplen los principios 'tidy'. 
+Lo que se quiere conseguir es de esa columna, obtener dos columnas en las que se pueda diferenciar por una parte la variable 'gender' y por otra 'age'.
+Esto se realiza con separate. 
+
+
+```{r}
+
+datosLimpios <- datos2 %>% 
+                separate(gender_age, into = c("gender", "age"), sep = "_", convert = TRUE) %>% 
+                pivot_longer(c("week1", "week2", "week3", "week4", "week5"), names_to = "Type of week", 
+                             values_to = "value")
+
+```
+
+
+También se utiliza "pivot_longer" ya que las distintas semanas aparecen en diferentes columnas, y nos gustaría tener todo ello en una única columna que se nombra como 'Type of week'
+
+```{r}
+View(datosLimpios)
+```
+
+
+
+
+
+# EJERCICIO III 
+
+
+
+
+## EJERCICIO 2 (sección 7.5.1.1 de R4DS)
+
+**¿Qué variables en el dataset Diamonds son las más importantes para predecir el precio del diamante?**
+
+En primer lugar, se deberían escoger aquellas variables que pueden ser posibles candidatas. 
+
+Como primer análisis exploratorio, se mirará por encima el dataset. 
+
+```{r}
+View(diamonds)
+```
+
+En este caso existe un número de columnas razonable, y será más o menos sencillo limitar la búsqueda, sin embargo en el mundo real podemos encontrar datasets con muchas más columnas y será también importante el conocimiento que se tenga sobre el tema para poder descartar algunas variables que se sepa que no influyen tanto y ahorrarse mucho tiempo y coste computacional. 
+
+
+
+También puede ocurrir que no se sepa qué es exactamente cada columna, y una de las ventajas de trabajar con este tipo de datasets es que está muy bien organizado y estandarizado, por lo que si se utiliza el comando 
+?diamonds, nos dará una breve descripción del asunto. 
+
+
+```{r}
+?diamonds
+```
+
+Se puede ver una pequeña descripción en la que se incluye, por ejemplo: 
+carat: peso del diamante 
+cut: calidad del diamante desde 'Normal' hasta 'Ideal'
+color: una escala en letras desde D(lo mejor) hasta J (lo peor)
+clarity: mide cómo de transparente es
+x, y, z: son coordinadas, que de alguna forma se puede interpretar que se encuentran "agrupadas" dentro de la variable 'carat'
+
+
+En primer lugar, se debe realizar una distinción entre variables continuas y otro tipo de variables como pueden ser factores. 
+
+
+Para la variable carat, por ejemplo, que es el peso del diamante, se puede realizar un gráfico de puntos: 
+
+```{r}
+ggplot(diamonds, aes(x = carat, y = price)) +
+  geom_point(colour = 'lightgreen')
+```
+
+
+Para terminar de cuantificar el análisis, podría realizarse una regresión lineal. 
+
+```{r}
+regresion <- lm(carat ~ price, data = diamonds)
+summary(regresion)
+```
+
+
+Se puede ver como el R^2 = 85%, que es bastante elevado. 
+
+
+
+
+Esto también se puede realizar integrando un boxplot como se explica en R for Data Scientist.
+
+
+Para mostrar esta opción, se analizará la variable 'color' con los boxplot, de forma que el gráfico resulta: 
+
+
+```{r}
+diamonds %>%
+  mutate(color = fct_rev(color)) %>%
+  ggplot(aes(x = color, y = price)) +
+  geom_boxplot(mapping = aes(x = cut, y = price), fill = 'olivedrab1')
+```
+
+
+En el caso de la variable 'clarity' ocurre algo similar, en este caso va a representarse con un gráfico distinto: 
+
+```{r}
+ggplot(data = diamonds, mapping = aes(x = cut, colour = clarity)) + 
+  geom_bar(fill = NA, position = "identity")
+```
+
+
+
+
+En este caso, el mejor predictor sería la variable carat.
+
+Por ir un paso más allá, se puede realizar también una regresión lineal para cuantificar de alguna forma cómo de bueno sería el modelo. 
+
+**¿Cómo está dicha variable relacionada con 'cut'?**
+
+En esta segunda pregunta, la relación entre 'cut' y 'carat' se puede representar de la siguiente forma: 
+
+```{r}
+ggplot(diamonds, aes(x = cut, y = carat)) +
+  geom_boxplot()
+```
+
+
+
+
+**¿Por qué la combinación de las dos relaciones hace que los diamantes de peor calidad sean más caros?**
+
+
+En el gráfico expuesto anteriormente puede verse que existe mucha variabilidad dentro de cada categoría.
+Se puede ver como en la primera categoría, los valores son más elevados que en resto, lo cual explica el hecho de que el precio sea más caro. 
+
+
+
+
+
+
+
+# EJERCICIO 4 (Sección 12.6.1)
+
+
+Para cado país, año y sexo, computar el número total de casos de TB. 
+Realizar también un gráfico explicativo. 
+
+
+
+
+
+En primer lugar, se van a ver los datos. 
+
+```{r}
+library(tidyr)
+```
+
+
+```{r}
+data(who)
+head(who, 15)
+```
+```{r}
+library(tidyverse)
+```
+
+
+A continuación, se deben realizar algunos pasos para limpiar y ordenar la tabla 
+
+
+```{r}
+who <- who %>%
+  pivot_longer(
+    cols = new_sp_m014:newrel_f65,
+    names_to = "key",
+    values_to = "cases",
+    values_drop_na = TRUE
+) %>%
+mutate(
+  key = stringr::str_replace(key, "newrel", "new_rel")
+) %>%
+separate(key, c("new", "var", "sexage")) %>%
+select(-new, -iso2, -iso3) %>%
+separate(sexage, c("sex", "age"), sep = 1)
+```
+
+
+
+
+
+Para calcular el número total de casos de tuberculosis: 
+
+
+```{r}
+who %>%
+  group_by(country, year, sex) %>%
+  summarise(cases = sum(cases))
+```
+
+
+
+
+La representación por gráfico: 
+
+# Esta podría ser una opción, pero realmente no queda nada claro, por lo que se realizan otros gráficos.
+
+```{r}
+who %>%
+  group_by(country, year, sex) %>%
+  summarise(cases = sum(cases)) %>%
+  unite(country_sex, country, sex, remove = FALSE) %>%
+  ggplot(aes(x = year, y = cases, group = country_sex, colour = sex)) +
+  geom_line()
+```
+
+  
+  
+  
+
+```{r}
+tabla <- who %>%
+  group_by(country) %>%
+  summarise(cases = sum(cases)) %>%
+  arrange(cases) %>%
+  filter(cases > mean(cases))
+```
+
+
+```{r}
+View(who)
+```
+
+Un posible gráfico podría ser este:
+
+```{r}
+who %>%
+  group_by(country, year, sex) %>%
+  filter(year>1995 & country %in% tabla$country) %>%
+  summarise(cases = sum(cases)) %>%
+  ggplot(aes(x = year, y = cases, group = sex, colour = country)) +
+  geom_line()+
+  labs(title = "Leyenda")
+ 
+```
+
+
+
+
+
+Otra opción sería utilizar los gráficos desglosados de diferente forma, como por ejemplo por paises, y utilizar una escala diferente para cada país para poder visualizarlo de una forma correcta. 
+
+
+
